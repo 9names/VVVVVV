@@ -431,6 +431,7 @@ bool intersectRect( float left1, float right1, float bottom1, float top1, float 
     return !( left2 > right1 || right2 < left1	|| top2 < bottom1 || bottom2 > top1);
 }
 
+#ifndef INLINE_DRAW_32BPP
 void OverlaySurfaceKeyed( SDL_Surface* _src, SDL_Surface* _dest, Uint32 _key )
 {
     // const SDL_PixelFormat& fmt = *(_src->format);
@@ -447,6 +448,25 @@ void OverlaySurfaceKeyed( SDL_Surface* _src, SDL_Surface* _dest, Uint32 _key )
         }
     }
 }
+#else
+void OverlaySurfaceKeyed( SDL_Surface* _src, SDL_Surface* _dest, Uint32 _key )
+{
+    for(int y = 0; y < _src->h; y++)
+    {
+        // Memoise the start of line addresses, so lookups become single-variable dependant
+        Uint32* src_line = GetYOffset(_src, y);
+        Uint32* dst_line = GetYOffset(_dest, y);
+        for(int x = 0; x < _src->w; x++)
+        {
+            Uint32 pixel = ReadPixelX(src_line, x);
+            if (( pixel != _key))
+            {
+                DrawPixelX(dst_line, x ,pixel);
+            }
+        }
+    }
+}
+#endif
 
 void ScrollSurface( SDL_Surface* _src, int _pX, int _pY )
 {

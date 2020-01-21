@@ -36,6 +36,33 @@ inline Uint32 ReadPixel( SDL_Surface *_surface, int x, int y ){
     Uint8 *p = (Uint8 *)_surface->pixels + y * _surface->pitch + x * 4;
     return *(Uint32 *)p;
 }
+
+/* Slightly more optimal versions of the above.
+ * If you're going to be operating across a line of pixels, only
+ * calculate the Y buffer offset at the start of line.
+ * Only used in OverlaySurfaceKeyed for now, but that function
+ * iterates across all pixels in the playfield sequentially and was
+ * using about 50% of all CPU time before, so this is a big perf win.
+ * Since SDL_Surface is malloc'd, it should have correct alignment for
+ * 32bit iteration -so return a 32bit pointer.
+ */
+
+/* Return a pointer to the start of line y on _surface */
+inline Uint32 *GetYOffset(SDL_Surface *_surface, int y){
+    Uint8 *p = (Uint8 *)_surface->pixels + y * _surface->pitch;
+    return (Uint32 *)p;
+}
+
+/* Read pixel at offset x of line pointed to by _start_of_line_address */
+inline Uint32 ReadPixelX(Uint32 *_start_of_line_address, int x){
+    return _start_of_line_address[x];
+}
+
+/* Draw pixel at offset x of line pointed to by _start_of_line_address */
+inline void DrawPixelX(Uint32 *_start_of_line_address, int x, Uint32 pixel){
+    _start_of_line_address[x] = pixel;
+}
+
 #endif
 
 SDL_Surface * ScaleSurface( SDL_Surface *Surface, int Width, int Height, SDL_Surface * Dest = NULL );
