@@ -64,6 +64,8 @@ SDL_Surface* GetSubSurface( SDL_Surface* metaSurface, int x, int y, int width, i
     return preSurface;
 }
 
+// If we're using the inline draw calls, they're in the header - these ones can disappear
+#ifndef INLINE_DRAW_32BPP
 void DrawPixel( SDL_Surface *_surface, int x, int y, Uint32 pixel )
 {
     int bpp = _surface->format->BytesPerPixel;
@@ -132,6 +134,7 @@ Uint32 ReadPixel( SDL_Surface *_surface, int x, int y )
         return 0;       /* shouldn't happen, but avoids warnings */
     }
 }
+#endif
 
 SDL_Surface * ScaleSurface( SDL_Surface *_surface, int Width, int Height, SDL_Surface * Dest )
 {

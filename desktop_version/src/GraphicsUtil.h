@@ -15,9 +15,28 @@ unsigned int endian_swap(unsigned int x);
 
 SDL_Surface* GetSubSurface( SDL_Surface* metaSurface, int x, int y, int width, int height );
 
+#ifndef INLINE_DRAW_32BPP
 void DrawPixel( SDL_Surface *surface, int x, int y, Uint32 pixel );
 
 Uint32 ReadPixel( SDL_Surface *surface, int x, int y );
+#else
+/* These functions become really simple if we assume 32bpp (4 bytes).
+ * It appears that VVVVVV always does this, so this *should* be safe.
+ * Also, make these inline to avoid the function call overhead on low
+ * optimization levels.
+ */
+inline void DrawPixel( SDL_Surface *_surface, int x, int y, Uint32 pixel )
+{
+    /* Here p is the address to the pixel we want to set */
+    Uint8 *p = (Uint8 *)_surface->pixels + y * _surface->pitch + x * 4;
+    *(Uint32 *)p = pixel;
+}
+
+inline Uint32 ReadPixel( SDL_Surface *_surface, int x, int y ){
+    Uint8 *p = (Uint8 *)_surface->pixels + y * _surface->pitch + x * 4;
+    return *(Uint32 *)p;
+}
+#endif
 
 SDL_Surface * ScaleSurface( SDL_Surface *Surface, int Width, int Height, SDL_Surface * Dest = NULL );
 
